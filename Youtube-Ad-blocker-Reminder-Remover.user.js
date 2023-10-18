@@ -3,31 +3,19 @@
 // @namespace    http://tampermonkey.net/
 // @version      1.0
 // @description  Removes Adblock Thing
-// @author       JoelMatic
+// @author       JoelMatic, BalaM314
 // @match        https://www.youtube.com/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=youtube.com
 // @grant        none
 // ==/UserScript==
-(function()
-{
-    //
-    //      Config
-    //
+(function(){
+    
+    //Config
+    const adblocker = true; // Enable The Undetected Adblocker
+    const removePopup = true; // Enable The Popup remover
+    const debug = true; // Enable debug messages into the console
 
-    // Enable The Undetected Adblocker
-    const adblocker = true;
-
-    // Enable The Popup remover
-    const removePopup = true;
-
-    // Enable debug messages into the console
-    const debug = true;
-
-    //
-    //      CODE
-    //
-
-    // Specify domains and JSON paths to remove
+    //Specify domains and JSON paths to remove
     const domainsToRemove = [
         '*.youtube-nocookie.com/*'
     ];
@@ -40,7 +28,6 @@
         'auxiliaryUi.messageRenderers.enforcementMessageViewModel'
     ];
 
-    // Observe config
     const observerConfig = {
         childList: true,
         subtree: true
@@ -49,16 +36,11 @@
     //This is used to check if the video has been unpaused already
     let unpausedAfterSkip = 0;
 
-    if (debug) console.log("Remove Adblock Thing: Remove Adblock Thing: Script started");
-    // Old variable but could work in some cases
-    window.__ytplayer_adblockDetected = false;
+    function logTag(message){
+        if(debug) console.log("%c[Remove Adblock Thing]%c " + message, "font-weight: bold; color: cyan;", "");
+    }
 
-    if(adblocker) addblocker();
-    if(removePopup) popupRemover();
-    if(removePopup) observer.observe(document.body, observerConfig);
-
-    // Remove Them pesski popups
-    function popupRemover() {
+    function popupRemover(){
         removeJsonPaths(domainsToRemove, jsonPathsToRemove);
         setInterval(() => {
 
@@ -73,11 +55,11 @@
                 document.getElementById("dismiss-button").click();
                 document.getElementsByClassName("ytp-play-button ytp-button")[0].click();
                 
-                if (debug) console.log("Remove Adblock Thing: Popup detected, removing...");
+                logTag("Popup detected, removing...");
                 popup.remove();
                 if (modalOverlay) modalOverlay.removeAttribute("opened");
                 unpausedAfterSkip = 2;
-                if (debug) console.log("Remove Adblock Thing: Popup removed");
+                logTag("Popup removed");
             }
 
             // Check if the video is paused after removing the popup
@@ -85,7 +67,6 @@
 
 
             if (video1) {
-                // UnPause The Video
                 if (video1.paused) unPauseVideo();
                 else if (unpausedAfterSkip > 0) unpausedAfterSkip--;
             }
@@ -93,37 +74,26 @@
                 if (video2.paused) unPauseVideo();
                 else if (unpausedAfterSkip > 0) unpausedAfterSkip--;
             }
-
-        }, 1000);
+        }, 200);
     }
     // undetected adblocker method
-    function addblocker()
-    {
-        setInterval(() =>
-        {
+    function addblocker(){
+        setInterval(() => {
             const skipBtn = document.querySelector('.videoAdUiSkipButton,.ytp-ad-skip-button');
             const ad = [...document.querySelectorAll('.ad-showing')][0];
             const sidAd = document.querySelector('ytd-action-companion-ad-renderer');
-            if (ad)
-            {
+            if(ad){
                 document.querySelector('video').playbackRate = 10;
-                if(skipBtn)
-                {
-                    skipBtn.click();
-                }
+                skipBtn?.click();
             }
 
-            if (sidAd)
-            {
-                sidAd.remove();
-            }
-        }, 50)
+            sidAd?.remove();
+        }, 50);
     }
     // Unpause the video Works most of the time
-    function unPauseVideo()
-    {
+    function unPauseVideo(){
         // Simulate pressing the "k" key to unpause the video
-        const keyEvent = new KeyboardEvent("keydown",{
+        const keyEvent = new KeyboardEvent("keydown", {
             key: "k",
             code: "KeyK",
             keyCode: 75,
@@ -134,33 +104,40 @@
         });
         document.dispatchEvent(keyEvent);
         unpausedAfterSkip = 0;
-        if (debug) console.log("Remove Adblock Thing: Unpaused video using 'k' key");
+        if(debug) console.log("Remove Adblock Thing: Unpaused video using 'k' key");
     }
-    function removeJsonPaths(domains, jsonPaths)
-    {
+    function removeJsonPaths(domains, jsonPaths){
         const currentDomain = window.location.hostname;
         if (!domains.includes(currentDomain)) return;
 
-        jsonPaths.forEach(jsonPath =>{
+        jsonPaths.forEach(jsonPath => {
             const pathParts = jsonPath.split('.');
             let obj = window;
-            for (const part of pathParts)
-            {
-                if (obj.hasOwnProperty(part))
-                {
+            for(const part of pathParts){
+                if(obj.hasOwnProperty(part))
                     obj = obj[part];
-                }
-                else
-                {
-                    break;
-                }
+                else break;
             }
-            obj = undefined;
+            obj = undefined; //how does this work?
         });
     }
     // Observe and remove ads when new content is loaded dynamically
     const observer = new MutationObserver(() =>
-    {
-        removeJsonPaths(domainsToRemove, jsonPathsToRemove);
-    });
+        removeJsonPaths(domainsToRemove, jsonPathsToRemove)
+    );
+
+
+    //main
+    logTag("Script started");
+    // Old variable but could work in some cases
+    window.__ytplayer_adblockDetected = false;
+
+    if(adblocker){
+        addblocker();
+    }
+    if(removePopup){
+        popupRemover();
+        observer.observe(document.body, observerConfig);
+    }
+
 })();
