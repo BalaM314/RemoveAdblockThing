@@ -11,7 +11,7 @@
 (function(){
     
     //Config
-    const adblocker = true; // Enable The Undetected Adblocker
+    const adblocker = false; // Enable The Undetected Adblocker
     const removePopup = true; // Enable The Popup remover
     const debug = true; // Enable debug messages into the console
 
@@ -34,7 +34,7 @@
     };
 
     //This is used to check if the video has been unpaused already
-    let unpausedAfterSkip = 0;
+    let shouldUnpause = false;
 
     function logTag(message){
         if(debug) console.log("%c[Remove Adblock Thing]%c " + message, "font-weight: bold; color: cyan;", "");
@@ -51,28 +51,21 @@
 
             const modalOverlay = document.querySelector("tp-yt-iron-overlay-backdrop");
 
-            if (popup) {
+            if(popup){
                 document.getElementById("dismiss-button").click();
                 document.getElementsByClassName("ytp-play-button ytp-button")[0].click();
                 
                 logTag("Popup detected, removing...");
                 popup.remove();
-                if (modalOverlay) modalOverlay.removeAttribute("opened");
-                unpausedAfterSkip = 2;
+                modalOverlay?.removeAttribute("opened");
+                shouldUnpause = true;
                 logTag("Popup removed");
             }
 
             // Check if the video is paused after removing the popup
-            if (!unpausedAfterSkip > 0) return;
-
-
-            if (video1) {
-                if (video1.paused) unPauseVideo();
-                else if (unpausedAfterSkip > 0) unpausedAfterSkip--;
-            }
-            if (video2) {
-                if (video2.paused) unPauseVideo();
-                else if (unpausedAfterSkip > 0) unpausedAfterSkip--;
+            if(shouldUnpause && (video1.paused || video2.paused)){
+                unPauseVideo();
+                shouldUnpause = false;
             }
         }, 200);
     }
