@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Remove Adblock Thing
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      1.1
 // @description  Removes Adblock Thing
 // @author       JoelMatic, BalaM314
 // @match        https://www.youtube.com/*
