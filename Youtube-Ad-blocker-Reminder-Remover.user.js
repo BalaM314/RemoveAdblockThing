@@ -61,12 +61,12 @@
 
             if(popup){
                 document.getElementById("dismiss-button").click();
-                document.getElementsByClassName("ytp-play-button ytp-button")[0].click();
+                document.getElementsByClassName("ytp-play-button ytp-button")[0]?.click();
                 
                 logTag("Popup detected, removing...");
                 popup.remove();
                 modalOverlay?.removeAttribute("opened");
-                modalOverlay.remove();
+                modalOverlay?.remove();
                 shouldUnpause = true;
                 logTag("Popup removed");
                 // toggle full-screen video to enable scrolling
