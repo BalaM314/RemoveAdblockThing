@@ -33,6 +33,12 @@
         subtree: true
     };
 
+    const clickEvent = new MouseEvent("click", {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+    });
+
     //This is used to check if the video has been unpaused already
     let shouldUnpause = false;
 
@@ -49,6 +55,8 @@
             const video1 = document.querySelector("#movie_player > video.html5-main-video");
             const video2 = document.querySelector("#movie_player > .html5-video-container > video");
 
+            const fullScreenButton = document.querySelector(".ytp-fullscreen-button");
+
             const modalOverlay = document.querySelector("tp-yt-iron-overlay-backdrop");
 
             if(popup){
@@ -58,8 +66,14 @@
                 logTag("Popup detected, removing...");
                 popup.remove();
                 modalOverlay?.removeAttribute("opened");
+                modalOverlay.remove();
                 shouldUnpause = true;
                 logTag("Popup removed");
+                // toggle full-screen video to enable scrolling
+                fullScreenButton.dispatchEvent(clickEvent);
+                setTimeout(() => {
+                    fullScreenButton.dispatchEvent(clickEvent);
+                }, 300);
             }
 
             // Check if the video is paused after removing the popup
